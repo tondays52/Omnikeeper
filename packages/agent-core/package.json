@@ -1,0 +1,23 @@
+{
+  "name": "omnikeeper-agent-core",
+  "version": "1.2.0",
+  "description": "Core multi-strategy autonomous agent engine powered by KeeperHub & ElizaOS",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/agent.js",
+    "test": "node --test dist/test/*.test.js",
+    "broadcast:live": "tsc && node dist/scripts/broadcastLiveTx.js"
+  },
+  "dependencies": {
+    "@keeperhub/plugin-eliza": "file:../plugin-eliza",
+    "axios": "^1.7.9",
+    "dotenv": "^16.4.7",
+    "viem": "^2.23.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.7",
+    "typescript": "^5.7.3"
+  }
+}

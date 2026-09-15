@@ -1,0 +1,29 @@
+{
+  "name": "@keeperhub/plugin-polymarket",
+  "version": "1.2.0",
+  "description": "Polymarket CTF Exchange and Prediction Market action plugin for KeeperHub",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "scripts": {
+    "build": "npx tsc",
+    "test": "node --test dist/test/*.test.js"
+  },
+  "keywords": [
+    "keeperhub",
+    "mcp",
+    "polymarket",
+    "ctf",
+    "prediction-markets",
+    "defi",
+    "elizaos"
+  ],
+  "author": "OmniKeeper Team",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.7.9"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.7",
+    "typescript": "^5.7.3"
+  }
+}

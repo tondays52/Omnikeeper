@@ -1,0 +1,6 @@
+{
+  "name": "omnikeeper-workflows",
+  "version": "1.0.0",
+  "description": "Validated KeeperHub JSON workflow templates for Safe treasury protection, Polymarket event risk hedging, and Hyperliquid basis rebalancing",
+  "private": true
+}

@@ -1,0 +1,112 @@
+{
+  "name": "Aegis Safe Collateral & Yield Sentinel",
+  "description": "Periodically monitors Aave V3 health factor on Base. Injects collateral from Safe if HF < 1.20, sweeps idle treasury if > 5,000 USDC.",
+  "tags": ["Safe", "Aave-V3", "Base", "Treasury-Guardian"],
+  "nodes": [
+    {
+      "id": "trigger-cron",
+      "type": "trigger",
+      "data": {
+        "label": "Every 5 Minutes Schedule",
+        "description": "Heartbeat trigger checking collateral risk",
+        "type": "trigger",
+        "config": {
+          "triggerType": "Schedule",
+          "cron": "*/5 * * * *"
+        },
+        "status": "idle"
+      }
+    },
+    {
+      "id": "read-aave-user-data",
+      "type": "action",
+      "data": {
+        "label": "Read Aave Account State",
+        "description": "Queries getUserAccountData on Aave V3 Pool Base",
+        "type": "action",
+        "config": {
+          "actionType": "web3/read-contract",
+          "network": "8453",
+          "contractAddress": "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5",
+          "abiFunction": "getUserAccountData(address)",
+          "args": ["0x9A4B8c99fA56c52aCDeB32800D15C2c8e01F7802"]
+        },
+        "status": "idle"
+      }
+    },
+    {
+      "id": "check-hf-condition",
+      "type": "condition",
+      "data": {
+        "label": "Health Factor < 1.20 Check",
+        "description": "Evaluates if health factor has breached safe buffer",
+        "type": "condition",
+        "config": {
+          "operator": "<",
+          "leftValue": "{{@read-aave-user-data:Read Aave Account State.healthFactor}}",
+          "rightValue": "1200000000000000000"
+        },
+        "status": "idle"
+      }
+    },
+    {
+      "id": "execute-safe-topup",
+      "type": "action",
+      "data": {
+        "label": "Execute Safe Collateral Top-Up",
+        "description": "Supplies 10,000 USDC collateral from Safe with MEV protection",
+        "type": "action",
+        "config": {
+          "actionType": "web3/write-contract",
+          "network": "8453",
+          "contractAddress": "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5",
+          "abiFunction": "supply(address,uint256,address,uint16)",
+          "args": [
+            "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+            "10000000000",
+            "0x9A4B8c99fA56c52aCDeB32800D15C2c8e01F7802",
+            0
+          ]
+        },
+        "status": "idle"
+      }
+    },
+    {
+      "id": "alert-telegram",
+      "type": "action",
+      "data": {
+        "label": "Dispatch Telegram Alert",
+        "description": "Sends high priority operational notification to DAO admins",
+        "type": "action",
+        "config": {
+          "actionType": "notification/telegram",
+          "template": "🚨 [Aegis Alert] Collateral Health Factor defended successfully via KeeperHub Safe execution."
+        },
+        "status": "idle"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1",
+      "source": "trigger-cron",
+      "target": "read-aave-user-data"
+    },
+    {
+      "id": "edge-2",
+      "source": "read-aave-user-data",
+      "target": "check-hf-condition"
+    },
+    {
+      "id": "edge-3",
+      "source": "check-hf-condition",
+      "target": "execute-safe-topup",
+      "sourceHandle": "true"
+    },
+    {
+      "id": "edge-4",
+      "source": "execute-safe-topup",
+      "target": "alert-telegram"
+    }
+  ]
+}

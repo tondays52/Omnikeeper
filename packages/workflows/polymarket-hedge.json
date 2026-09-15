@@ -1,0 +1,85 @@
+{
+  "name": "Polymarket Macro Event Risk Hedger",
+  "description": "Webhook triggered workflow that consumes Polymarket CLOB odds changes and executes onchain hedging swaps on Base / Polygon.",
+  "tags": ["Polymarket", "Hedging", "CTF", "Macro-AI"],
+  "nodes": [
+    {
+      "id": "trigger-webhook",
+      "type": "trigger",
+      "data": {
+        "label": "Polymarket Event Webhook",
+        "description": "Triggered when market odds probability shifts > 15% in 1 hour",
+        "type": "trigger",
+        "config": {
+          "triggerType": "Webhook",
+          "path": "/webhook/polymarket-odds"
+        },
+        "status": "idle"
+      }
+    },
+    {
+      "id": "evaluate-macro-spread",
+      "type": "condition",
+      "data": {
+        "label": "Probability > 65% Check",
+        "description": "Verify whether implied probability warrants an onchain hedge",
+        "type": "condition",
+        "config": {
+          "operator": ">=",
+          "leftValue": "{{@trigger-webhook:Polymarket Event Webhook.body.probability}}",
+          "rightValue": "0.65"
+        },
+        "status": "idle"
+      }
+    },
+    {
+      "id": "execute-ctf-hedge",
+      "type": "action",
+      "data": {
+        "label": "Execute CTF Exchange Hedge",
+        "description": "Purchases YES conditional tokens via KeeperHub wallet integration",
+        "type": "action",
+        "config": {
+          "actionType": "web3/write-contract",
+          "network": "137",
+          "contractAddress": "0x4bFb41d5B3570DeFd03C39a9A4D8dE6Bd8B8982E",
+          "abiFunction": "buy(uint256,uint256,uint256)",
+          "args": ["3500000000", "5000000000", "0"]
+        },
+        "status": "idle"
+      }
+    },
+    {
+      "id": "dispatch-discord-alert",
+      "type": "action",
+      "data": {
+        "label": "Discord Notification",
+        "description": "Logs trade details and tx hash to DAO risk channel",
+        "type": "action",
+        "config": {
+          "actionType": "notification/discord",
+          "message": "🎯 [Polymarket Hedge Executed] AI agent locked in hedge against macro volatility spike."
+        },
+        "status": "idle"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1",
+      "source": "trigger-webhook",
+      "target": "evaluate-macro-spread"
+    },
+    {
+      "id": "edge-2",
+      "source": "evaluate-macro-spread",
+      "target": "execute-ctf-hedge",
+      "sourceHandle": "true"
+    },
+    {
+      "id": "edge-3",
+      "source": "execute-ctf-hedge",
+      "target": "dispatch-discord-alert"
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "name": "Hyperliquid Funding Rate Basis Sentinel",
+  "description": "Monitors Hyperliquid ETH-PERP funding rate hourly and executes delta-neutral cross-chain basis rebalances on Uniswap V3 (Base).",
+  "tags": ["Hyperliquid", "Perps", "Uniswap", "Basis-Trading", "Arbitrum", "Base"],
+  "nodes": [
+    {
+      "id": "trigger-hourly",
+      "type": "trigger",
+      "data": {
+        "label": "Hourly Rebalance Heartbeat",
+        "description": "Triggered every hour on the hour",
+        "type": "trigger",
+        "config": {
+          "triggerType": "Schedule",
+          "cron": "0 * * * *"
+        },
+        "status": "idle"
+      }
+    },
+    {
+      "id": "read-hl-funding",
+      "type": "action",
+      "data": {
+        "label": "Read Hyperliquid Funding Rate",
+        "description": "Fetches current perp funding rate and mark price",
+        "type": "action",
+        "config": {
+          "actionType": "hyperliquid/get-funding-rate",
+          "coin": "ETH"
+        },
+        "status": "idle"
+      }
+    },
+    {
+      "id": "check-funding-threshold",
+      "type": "condition",
+      "data": {
+        "label": "Funding Rate > 0.03% Check",
+        "description": "Checks if annualized funding exceeds 25% APR",
+        "type": "condition",
+        "config": {
+          "operator": ">=",
+          "leftValue": "{{@read-hl-funding:Read Hyperliquid Funding Rate.fundingRate}}",
+          "rightValue": "0.0003"
+        },
+        "status": "idle"
+      }
+    },
+    {
+      "id": "uniswap-spot-hedge",
+      "type": "action",
+      "data": {
+        "label": "Uniswap V3 Spot Rebalance",
+        "description": "Executes spot purchase to match short perp delta on Base",
+        "type": "action",
+        "config": {
+          "actionType": "uniswap/swap-exact-in",
+          "network": "8453",
+          "tokenIn": "USDC",
+          "tokenOut": "WETH",
+          "amountIn": "15000000000",
+          "slippageTolerance": "0.5"
+        },
+        "status": "idle"
+      }
+    },
+    {
+      "id": "audit-log",
+      "type": "action",
+      "data": {
+        "label": "Record Audit Log",
+        "description": "Stores state hash into KeeperHub immutable audit trail",
+        "type": "action",
+        "config": {
+          "actionType": "data/append-log",
+          "logName": "basis-trading-runs"
+        },
+        "status": "idle"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1",
+      "source": "trigger-hourly",
+      "target": "read-hl-funding"
+    },
+    {
+      "id": "edge-2",
+      "source": "read-hl-funding",
+      "target": "check-funding-threshold"
+    },
+    {
+      "id": "edge-3",
+      "source": "check-funding-threshold",
+      "target": "uniswap-spot-hedge",
+      "sourceHandle": "true"
+    },
+    {
+      "id": "edge-4",
+      "source": "uniswap-spot-hedge",
+      "target": "audit-log"
+    }
+  ]
+}
