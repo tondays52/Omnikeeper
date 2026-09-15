@@ -25,7 +25,7 @@
 `https://github.com/tondays52/omnikeeper`
 
 ### **Demo Video / Screen Recording URL**
-`https://www.loom.com/share/YOUR_RECORDING_LINK` *(or YouTube link)*
+`https://github.com/tondays52/omnikeeper/blob/main/docs/demo/omnikeeper_demo_video.webm` *(Also viewable in repo at `docs/demo/`)*
 
 ### **Which project did you integrate with, and what does the integration do?**
 > Integrated **ElizaOS** agents with **Aave V3 (Base)**, **Safe {Core} Smart Accounts**, **Polymarket (Polygon)**, and **Hyperliquid**. ElizaOS handles autonomous probabilistic market sensing and natural language reasoning, while KeeperHub acts as the deterministic execution coprocessor—simulating EVM bytecode (`simulate: true`), safeguarding Aave health factors via automated Safe top-ups, and hedging macro risks.
