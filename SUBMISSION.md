@@ -35,7 +35,7 @@ Per DoraHacks guidelines ("A BUIDL can only be applied to one track"):
 ### 🥇 **BUIDL 1 — Main Track ($4,000 Prize Pool)**
 - **Track**: **Best Integration into a Live Project**
 - **Title**: `OmniKeeper (AegisAgent) — Autonomous AI Treasury & Risk Guardian`
-- **Repo Link**: `https://github.com/your-org/omnikeeper`
+- **Repo Link**: `https://github.com/tondays52/omnikeeper`
 - **Key Highlight**: Full agent architecture, ElizaOS MCP bridge, live Base/Polygon execution, and interactive telemetry studio.
 
 ### 🎁 **BUIDL 2 — Bounty Track ($1,000 Bounty)**
