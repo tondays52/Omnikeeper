@@ -1,6 +1,7 @@
 export * from './types.js';
 export * from './simulation/simulator.js';
 export * from './services/liveMarketService.js';
+export * from './security/securityPolicy.js';
 export * from './safe-guardian/safeExecutionService.js';
 export * from './hyperliquid/hyperliquidService.js';
 export * from './backtesting/historicalBlockReplay.js';

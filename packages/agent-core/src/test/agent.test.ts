@@ -8,6 +8,7 @@ import { SafeExecutionService } from '../safe-guardian/safeExecutionService.js';
 import { HyperliquidService } from '../hyperliquid/hyperliquidService.js';
 import { HistoricalBlockReplayEngine } from '../backtesting/historicalBlockReplay.js';
 import { CloudDagDeployer } from '../dag-compiler/cloudDagDeployer.js';
+import { SecurityPolicyManager } from '../security/securityPolicy.js';
 import { OmniKeeperAutonomousAgent } from '../agent.js';
 
 test('KeeperHub Simulation Engine - Validates preflight balance check', () => {
@@ -50,6 +51,29 @@ test('KeeperHub Simulation Engine - Passes happy path with dry-run gas estimate'
   assert.strictEqual(result.preflightPassed, true);
   assert.strictEqual(result.wouldRevert, false);
   assert.strictEqual(result.gasEstimate, '170000');
+});
+
+test('SecurityPolicyManager - Blocks unauthorized non-whitelisted contract target', () => {
+  const check = SecurityPolicyManager.validateTransaction({
+    targetContract: '0x1111111111111111111111111111111111111111',
+    amountUsd: 1000,
+    slippagePercent: 0.1
+  });
+
+  assert.strictEqual(check.allowed, false);
+  assert.strictEqual(check.securityTier, 'CRITICAL_BLOCKED');
+  assert.ok(check.blockedReason?.includes('whitelist'));
+});
+
+test('SecurityPolicyManager - Approves authorized Aave V3 contract target within limits', () => {
+  const check = SecurityPolicyManager.validateTransaction({
+    targetContract: '0xA238Dd80C259a72e81d7e4664a9801593F98d1c5', // Aave V3 Base
+    amountUsd: 5000,
+    slippagePercent: 0.2
+  });
+
+  assert.strictEqual(check.allowed, true);
+  assert.strictEqual(check.securityTier, 'LOW_RISK');
 });
 
 test('SafeExecutionService - Executes simulation fork dry-run on Base RPC', async () => {
