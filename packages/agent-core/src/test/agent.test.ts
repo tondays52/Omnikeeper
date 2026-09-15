@@ -9,6 +9,8 @@ import { HyperliquidService } from '../hyperliquid/hyperliquidService.js';
 import { HistoricalBlockReplayEngine } from '../backtesting/historicalBlockReplay.js';
 import { CloudDagDeployer } from '../dag-compiler/cloudDagDeployer.js';
 import { SecurityPolicyManager } from '../security/securityPolicy.js';
+import { X402PaymentGate } from '../x402/x402PaymentGate.js';
+import { ERC8004IdentityRegistry } from '../identity/erc8004Identity.js';
 import { OmniKeeperAutonomousAgent } from '../agent.js';
 
 test('KeeperHub Simulation Engine - Validates preflight balance check', () => {
@@ -74,6 +76,67 @@ test('SecurityPolicyManager - Approves authorized Aave V3 contract target within
 
   assert.strictEqual(check.allowed, true);
   assert.strictEqual(check.securityTier, 'LOW_RISK');
+});
+
+test('X402PaymentGate - Returns HTTP 402 challenge without payment proof', async () => {
+  const res = await X402PaymentGate.handleMonetizedExecution(undefined, async () => {
+    return {
+      id: 'test_exec',
+      timestamp: new Date().toISOString(),
+      strategy: 'SAFE_YIELD_GUARDIAN',
+      reasoning: 'Rebalanced',
+      actionTaken: 'TOPUP',
+      simulationStatus: 'PASSED',
+      status: 'COMPLETED'
+    };
+  });
+
+  assert.strictEqual(res.httpStatus, 402);
+  assert.strictEqual(res.paid, false);
+  assert.ok(res.error?.includes('402 Payment Required'));
+});
+
+test('X402PaymentGate - Verifies valid x402 payment proof and executes service', async () => {
+  const challenge = X402PaymentGate.createChallenge('AAVE_TOPUP');
+  const validProof = {
+    challengeId: challenge.paymentDetails.challengeId,
+    payerAddress: '0x1234567890123456789012345678901234567890',
+    txHashOrSignature: '0x7c49b6ef3d4a0112c22f03f569ad4148e029c7ff1100f91deba25e01865a77cd',
+    amountPaid: '0.05',
+    network: '8453'
+  };
+
+  const res = await X402PaymentGate.handleMonetizedExecution(validProof, async () => {
+    return {
+      id: 'test_exec_paid',
+      timestamp: new Date().toISOString(),
+      strategy: 'SAFE_YIELD_GUARDIAN',
+      reasoning: 'Executed with x402 micro-payment',
+      actionTaken: 'SUPPLY_COLLATERAL',
+      simulationStatus: 'PASSED',
+      status: 'COMPLETED'
+    };
+  });
+
+  assert.strictEqual(res.httpStatus, 200);
+  assert.strictEqual(res.paid, true);
+  assert.strictEqual(res.executionResult?.strategy, 'SAFE_YIELD_GUARDIAN');
+});
+
+test('ERC8004IdentityRegistry - Retrieves onchain agent profile and logs attestations', () => {
+  const meta = ERC8004IdentityRegistry.getAgentMetadata();
+  assert.strictEqual(meta.name, 'AegisAgent (OmniKeeper)');
+  assert.ok(meta.reputationScore >= 900);
+
+  const attestation = ERC8004IdentityRegistry.createExecutionAttestation({
+    executionHash: '0x7c49b6ef3d4a0112c22f03f569ad4148e029c7ff1100f91deba25e01865a77cd',
+    strategy: 'SAFE_YIELD_GUARDIAN',
+    status: 'SUCCESS'
+  });
+
+  assert.strictEqual(attestation.status, 'SUCCESS');
+  assert.strictEqual(attestation.reputationDelta, 5);
+  assert.ok(attestation.signature.startsWith('0x'));
 });
 
 test('SafeExecutionService - Executes simulation fork dry-run on Base RPC', async () => {

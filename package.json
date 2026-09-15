@@ -10,7 +10,8 @@
     "build:agent": "npm --prefix packages/agent-core run build",
     "build:dashboard": "npm --prefix packages/dashboard run build",
     "test": "npm --prefix packages/agent-core test",
-    "agent:start": "npm --prefix packages/agent-core run start"
+    "agent:start": "npm --prefix packages/agent-core run start",
+    "kh:verify": "node scripts/verify-kh.js"
   },
   "keywords": [
     "keeperhub",
@@ -21,6 +22,8 @@
     "polymarket",
     "hyperliquid",
     "mcp",
+    "x402",
+    "erc-8004",
     "defi"
   ],
   "author": "OmniKeeper Team",

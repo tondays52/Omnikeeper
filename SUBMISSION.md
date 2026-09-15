@@ -31,11 +31,13 @@
 > Integrated **ElizaOS** agents with **Aave V3 (Base)**, **Safe {Core} Smart Accounts**, **Polymarket (Polygon)**, and **Hyperliquid**. ElizaOS handles autonomous probabilistic market sensing and natural language reasoning, while KeeperHub acts as the deterministic execution coprocessor—simulating EVM bytecode (`simulate: true`), safeguarding Aave health factors via automated Safe top-ups, and hedging macro risks.
 
 ### **Which KeeperHub surfaces did you use?**
-> - **KeeperHub Remote MCP Server** (`@keeperhub/plugin-eliza`)
+> - **KeeperHub Remote MCP Server** (`@keeperhub/plugin-eliza` action suite)
 > - **Pre-flight Simulation Engine** (`simulate: true` bytecode dry-runs & revert decoding)
-> - **Deterministic DAG Workflow Engine** (`packages/workflows/`)
-> - **Flashbots / Private RPC Routing** (Zero MEV sandwich loss)
-> - **Execution SLA Audit Trail** (Immutable cryptographic run verification)
+> - **Agent-Authored Workflow DAG Engine** (Natural language Prompt-to-DAG compiler in `packages/workflows/`)
+> - **x402 / MPP Pay-Per-Execution Gate** (HTTP 402 machine-to-machine micropayment paywall in `packages/agent-core/src/x402/`)
+> - **ERC-8004 Onchain Agent Identity** (Cryptographic reputation registry & attestation logging in `packages/agent-core/src/identity/`)
+> - **Native KeeperHub CLI (`kh`) Verification** (`npm run kh:verify` & `scripts/verify-kh.sh`)
+> - **Flashbots / Private RPC Routing & SLA Audit Trail** (Zero MEV sandwich losses, immutable cryptographic execution receipts)
 
 ### **Testnet or Mainnet?**
 > **Mainnet**: Base Mainnet (`Chain ID: 8453`) and Polygon Mainnet (`Chain ID: 137`).
