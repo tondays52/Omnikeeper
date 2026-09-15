@@ -182,7 +182,10 @@ test('CloudDagDeployer - Compiles natural language prompt into KeeperHub DAG', a
   assert.strictEqual(dag.nodes[3].type, 'EXECUTOR');
 
   const deploy = await CloudDagDeployer.deployDag(dag);
-  assert.ok(deploy.cloudUrl.includes('https://app.keeperhub.com/workflows/'));
+  const deployUrl = new URL(deploy.cloudUrl);
+  assert.strictEqual(deployUrl.protocol, 'https:');
+  assert.strictEqual(deployUrl.host, 'app.keeperhub.com');
+  assert.ok(deployUrl.pathname.startsWith('/workflows/'));
 });
 
 test('SafeYieldGuardianStrategy - Executes emergency top-up on low health factor', () => {
