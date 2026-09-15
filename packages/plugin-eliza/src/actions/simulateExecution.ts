@@ -1,5 +1,5 @@
 import { ElizaAction, ElizaState, ElizaMemory } from '../types.js';
-import { KeeperHubClient } from '../client.js';
+import { getKeeperHubClient, extractActionParams, notifyProgress } from './actionHelper.js';
 
 export const simulateExecutionAction: ElizaAction = {
   name: 'KEEPERHUB_SIMULATE_EXECUTION',
@@ -13,15 +13,12 @@ export const simulateExecutionAction: ElizaAction = {
 
   validate: async (_runtime: any, message: ElizaMemory, _state?: ElizaState): Promise<boolean> => {
     const text = message.content.text.toLowerCase();
-    return text.includes('simulate') || text.includes('dry run') || text.includes('test call') || text.includes('check revert');
+    return ['simulate', 'dry run', 'test call', 'check revert'].some(term => text.includes(term));
   },
 
   handler: async (runtime: any, message: ElizaMemory, state?: ElizaState, _options?: any, callback?: any): Promise<any> => {
-    const client = new KeeperHubClient({
-      apiKey: process.env.KEEPERHUB_API_KEY || 'kh_test_key'
-    });
-
-    const params = message.content.params || {};
+    const client = getKeeperHubClient();
+    const params = extractActionParams(message);
     const network = params.network || '8453';
     const contractAddress = params.contractAddress || '0xA238Dd80C259a72e81d7e4664a9801593F98d1c5';
     const abiFunction = params.abiFunction || 'supply(address,uint256,address,uint16)';
@@ -34,27 +31,12 @@ export const simulateExecutionAction: ElizaAction = {
       args
     });
 
-    let report = '';
-    if (sim.preflightPassed && !sim.wouldRevert) {
-      report = `📊 **KeeperHub Pre-flight Simulation Report:**\n` +
-               `• Status: **PASSED (Dry Run Clean)**\n` +
-               `• Network: Chain ID ${network}\n` +
-               `• Target: \`${contractAddress}\`\n` +
-               `• Function: \`${abiFunction}\`\n` +
-               `• Gas Estimate: \`${sim.gasEstimate}\`\n` +
-               `• Simulated Sender: \`${sim.simulatedSender}\`\n` +
-               `• Revert Risk: **0.00% (Safe to Broadcast)**`;
-    } else {
-      report = `🚨 **KeeperHub Pre-flight Simulation Report:**\n` +
-               `• Status: **FAILED (Simulation Intercepted)**\n` +
-               `• Failure Kind: \`${sim.failureKind}\`\n` +
-               `• Error Code: \`${sim.errorCode}\`\n` +
-               `• Diagnostic: ${sim.errorMessage}\n` +
-               `• Target: \`${contractAddress}\`\n` +
-               `• Outcome: **Broadcast blocked. Zero onchain gas lost.**`;
-    }
+    const isClean = sim.preflightPassed && !sim.wouldRevert;
+    const report = isClean
+      ? `📊 **KeeperHub Pre-flight Simulation Report:**\n• Status: **PASSED (Dry Run Clean)**\n• Network: Chain ID ${network}\n• Target: \`${contractAddress}\`\n• Function: \`${abiFunction}\`\n• Gas Estimate: \`${sim.gasEstimate}\`\n• Simulated Sender: \`${sim.simulatedSender}\`\n• Revert Risk: **0.00% (Safe to Broadcast)**`
+      : `🚨 **KeeperHub Pre-flight Simulation Report:**\n• Status: **FAILED (Simulation Intercepted)**\n• Failure Kind: \`${sim.failureKind}\`\n• Error Code: \`${sim.errorCode}\`\n• Diagnostic: ${sim.errorMessage}\n• Target: \`${contractAddress}\`\n• Outcome: **Broadcast blocked. Zero onchain gas lost.**`;
 
-    if (callback) callback({ text: report });
+    notifyProgress(callback, report);
     return { success: true, simulation: sim, report };
   },
 
@@ -71,3 +53,4 @@ export const simulateExecutionAction: ElizaAction = {
     ]
   ]
 };
+
