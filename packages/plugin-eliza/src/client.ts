@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import axios, { AxiosInstance } from 'axios';
 import {
   KeeperHubConfig,
@@ -118,7 +119,7 @@ export class KeeperHubClient {
         simulate: false
       });
 
-      const txHash = response.data.txHash || response.data.transactionHash || '0x' + Array.from({length: 64}, () => Math.floor(Math.random()*16).toString(16)).join('');
+      const txHash = response.data.txHash || response.data.transactionHash || `0x${crypto.randomBytes(32).toString('hex')}`;
       const explorer = this.getExplorerUrl(params.network, txHash);
 
       return {
@@ -168,7 +169,7 @@ export class KeeperHubClient {
         simulate: false
       });
 
-      const txHash = response.data.txHash || response.data.transactionHash || '0x' + Array.from({length: 64}, () => Math.floor(Math.random()*16).toString(16)).join('');
+      const txHash = response.data.txHash || response.data.transactionHash || `0x${crypto.randomBytes(32).toString('hex')}`;
       const explorer = this.getExplorerUrl(params.network, txHash);
 
       return {
@@ -202,7 +203,7 @@ export class KeeperHubClient {
     } catch (error: any) {
       // Return simulated mock workflow id if endpoint offline in dev test
       return {
-        workflowId: 'wf_' + Math.random().toString(36).substring(2, 9),
+        workflowId: `wf_${crypto.randomBytes(4).toString('hex')}`,
         status: 'ACTIVE_MOCKED'
       };
     }

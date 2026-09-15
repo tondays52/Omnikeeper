@@ -143,7 +143,7 @@ export const AgentCoPilotModal: React.FC<AgentCoPilotModalProps> = ({
   };
 
   const handleConfirmExecute = (plan: any) => {
-    const randomTx = '0x' + Array.from({length: 64}, () => Math.floor(Math.random()*16).toString(16)).join('');
+    const randomTx = `0x${Array.from(window.crypto.getRandomValues(new Uint8Array(32)), b => b.toString(16).padStart(2, '0')).join('')}`;
     const newLog: DecisionLog = {
       id: 'log_copilot_' + Date.now(),
       timestamp: new Date().toISOString(),

@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { AgentDecisionLog } from '../types.js';
 
 export interface X402PaymentChallenge {
@@ -40,7 +41,7 @@ export class X402PaymentGate {
    * Generates a standard HTTP 402 Payment Required challenge for machine-to-machine payment
    */
   public static createChallenge(serviceName: string = 'AAVE_HEALTH_GUARD'): X402PaymentChallenge {
-    const challengeId = 'x402_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+    const challengeId = `x402_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
     const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minute challenge validity
 
     const details: X402PaymentChallenge['paymentDetails'] = {

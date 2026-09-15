@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { createPublicClient, createWalletClient, http, parseUnits, formatUnits, encodeFunctionData, parseAbi } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { base, baseSepolia } from 'viem/chains';
@@ -125,7 +126,7 @@ export class SafeExecutionService {
         }
       } else {
         // Fallback live receipt with simulated hash if private key not configured
-        const pseudoTxHash = `0x${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}` as `0x${string}`;
+        const pseudoTxHash = `0x${crypto.randomBytes(32).toString('hex')}` as `0x${string}`;
         return {
           mode: 'LIVE',
           success: true,

@@ -15,6 +15,10 @@ import { BlackSwanBacktestModal } from './components/BlackSwanBacktestModal.tsx'
 import { PromptToDagModal } from './components/PromptToDagModal.tsx';
 import { LiveDataService } from './services/liveDataService.ts';
 
+const getSecureRandomHex = (bytes = 32): string => {
+  return Array.from(window.crypto.getRandomValues(new Uint8Array(bytes)), b => b.toString(16).padStart(2, '0')).join('');
+};
+
 export const App: React.FC = () => {
   const [network, setNetwork] = useState<string>('8453'); // Base Chain
   const [healthFactor, setHealthFactor] = useState<number>(1.28);
@@ -167,7 +171,7 @@ export const App: React.FC = () => {
 
     setHealthFactor(1.48);
     setSafeUsdc(prev => Math.max(0, prev - policyConfig.autoTopUpAmountUsdc));
-    const randomTx = '0x' + Array.from({length: 64}, () => Math.floor(Math.random()*16).toString(16)).join('');
+    const randomTx = `0x${getSecureRandomHex(32)}`;
     const topUpLog: DecisionLog = {
       id: 'log_manual_safe_' + Date.now(),
       timestamp: new Date().toISOString(),
@@ -188,7 +192,7 @@ export const App: React.FC = () => {
   const handleTriggerPolymarketHedge = () => {
     setIsSimulating(true);
     setTimeout(() => {
-      const randomTx = '0x' + Array.from({length: 64}, () => Math.floor(Math.random()*16).toString(16)).join('');
+      const randomTx = `0x${getSecureRandomHex(32)}`;
       const hedgeLog: DecisionLog = {
         id: 'log_manual_poly_' + Date.now(),
         timestamp: new Date().toISOString(),
@@ -210,7 +214,7 @@ export const App: React.FC = () => {
   const handleTriggerHyperliquidBasis = () => {
     setIsSimulating(true);
     setTimeout(() => {
-      const randomTx = '0x' + Array.from({length: 64}, () => Math.floor(Math.random()*16).toString(16)).join('');
+      const randomTx = `0x${getSecureRandomHex(32)}`;
       const basisLog: DecisionLog = {
         id: 'log_manual_hl_' + Date.now(),
         timestamp: new Date().toISOString(),

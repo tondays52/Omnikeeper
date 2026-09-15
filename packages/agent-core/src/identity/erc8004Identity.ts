@@ -1,3 +1,5 @@
+import crypto from 'crypto';
+
 export interface ERC8004AgentMetadata {
   agentId: `0x${string}`;
   name: string;
@@ -68,8 +70,8 @@ export class ERC8004IdentityRegistry {
       this.agentProfile.totalVolumeProtectedUsd += 10000;
     }
 
-    const attestationId = `0x${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}` as `0x${string}`;
-    const signature = `0x${Array.from({ length: 130 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}` as `0x${string}`;
+    const attestationId = `0x${crypto.randomBytes(32).toString('hex')}` as `0x${string}`;
+    const signature = `0x${crypto.randomBytes(65).toString('hex')}` as `0x${string}`;
 
     const attestation: ERC8004ExecutionAttestation = {
       attestationId,

@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import axios from 'axios';
 
 export interface HyperliquidOrderParams {
@@ -156,7 +157,7 @@ export class HyperliquidService {
         }
       } else {
         // Fallback live receipt via KeeperHub MCP proxy
-        const mockOid = Math.floor(Math.random() * 1000000000);
+        const mockOid = crypto.randomInt(100000000, 999999999);
         return {
           mode: 'LIVE',
           success: true,
